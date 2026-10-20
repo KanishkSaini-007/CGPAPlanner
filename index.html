@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CGPA Planner - know your SGPA, plan your next semester</title>
+<meta name="description" content="A private CGPA and SGPA planner. Add semesters and courses, see your SGPA and CGPA, and work out the grades you need to hit your target. No login, your data stays in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231b1440'/%3E%3Cpath d='M8 22l5-6 4 3 7-9' stroke='%23f5b942' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--ink:#1b1440;--ink2:#4a4370;--paper:#faf8f2;--card:#fff;--amber:#f5b942;--amber-d:#c98a12;--line:#e6e0d2;--good:#1e7d4f;--bad:#b3362b;--mut:#8a84a8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 Georgia,'Times New Roman',serif}
+.wrap{max-width:920px;margin:0 auto;padding:28px 16px 60px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+h1{font-size:30px;letter-spacing:.5px}
+h1 em{color:var(--amber-d);font-style:normal}
+.tag{color:var(--ink2);font-size:14px}
+button{font:600 13px/1 system-ui,sans-serif;cursor:pointer;border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;padding:8px 14px}
+button.ghost{background:#fff;color:var(--ink)}
+button.ghost:hover{background:var(--ink);color:#fff}
+button.warn{border-color:var(--bad);color:var(--bad);background:#fff}
+button.warn:hover{background:var(--bad);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:0 1px 0 var(--line)}
+.card h2{font-size:19px;margin-bottom:6px}
+.big{font:700 44px/1.1 system-ui,sans-serif}
+.big small{font-size:16px;color:var(--mut);font-weight:400}
+.sub{color:var(--ink2);font-size:13.5px;margin-top:4px}
+.bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber-d))}
+.sem{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden}
+.sem-h{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f3efe4;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sem-h input.name{border:none;background:transparent;font:700 16px Georgia,serif;color:var(--ink);width:160px}
+.sem-h .sg{margin-left:auto;font:600 13px system-ui,sans-serif;color:var(--ink2)}
+.sem-h .sg b{color:var(--ink);font-size:15px}
+table{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:13.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+td input,td select{width:100%;border:1px solid var(--line);border-radius:5px;padding:6px 8px;font:13px system-ui,sans-serif;background:#fff}
+td.cr input{text-align:center}
+.x{border:none;background:none;color:var(--bad);font-size:16px;padding:2px 6px;cursor:pointer}
+.sem-f{padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sem-f button{padding:6px 10px;font-size:12px}
+.planner{background:var(--ink);color:#fff;border-radius:10px;padding:20px;margin:22px 0}
+.planner h2{color:var(--amber);margin-bottom:8px}
+.planner label{font:600 12px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px;color:#bdb6e0;display:block;margin:10px 0 4px}
+.planner input{width:110px;border:1px solid #3d3375;border-radius:6px;background:#241b52;color:#fff;padding:8px 10px;font:15px system-ui,sans-serif}
+.planner .row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+.verdict{margin-top:14px;font-size:15px;line-height:1.6}
+.verdict b{color:var(--amber)}
+.verdict .no{color:#ff9d8f}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;font-family:system-ui,sans-serif}
+dialog{border:none;border-radius:10px;padding:22px;max-width:420px;box-shadow:0 10px 40px #0004}
+dialog::backdrop{background:#1b144088}
+dialog textarea{width:100%;height:140px;font:12px monospace;border:1px solid var(--line);border-radius:6px;padding:8px;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div><h1>CGPA <em>Planner</em></h1><p class="tag">Know your SGPA. Plan the grades you need. Everything stays in your browser.</p></div>
+  <div>
+    <button class="ghost" id="exportBtn">Backup JSON</button>
+    <button class="ghost" id="importBtn">Restore</button>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Your CGPA</h2>
+    <div class="big" id="cgpaBig">-<small> / <span class="scaleLabel">10</span></small></div>
+    <div class="bar"><i id="cgpaBar" style="width:0%"></i></div>
+    <p class="sub" id="cgpaSub">Add a semester below to start.</p>
+  </div>
+  <div class="card">
+    <h2>Grading scale</h2>
+    <p class="sub" style="margin-bottom:8px">Pick the letter-to-point map your college uses. Default is the common 10-point scale.</p>
+    <div id="scaleBox" style="font-family:system-ui,sans-serif;font-size:13.5px"></div>
+  </div>
+</div>
+
+<div class="planner" id="planner">
+  <h2>Target planner</h2>
+  <p style="font-size:14px;color:#d8d3f0">What average grade point do you need in your remaining credits to reach your goal?</p>
+  <div class="row">
+    <div><label>Target CGPA</label><input id="target" type="number" step="0.01" min="0" value="8.5"></div>
+    <div><label>Credits left (incl. current sem)</label><input id="creditsLeft" type="number" step="1" min="0" value="20"></div>
+  </div>
+  <p class="verdict" id="verdict"></p>
+</div>
+
+<div class="toolbar">
+  <button id="addSem">+ Add semester</button>
+</div>
+<div id="sems"></div>
+
+<footer>
+  <p>Letter points and formulas are editable in the scale card - colleges differ, so check yours. Data is saved only in this browser (localStorage). Built by Kanishk Saini as a learning project.</p>
+</footer>
+</div>
+
+<dialog id="ioDlg"><form method="dialog">
+  <h3 id="ioTitle">Backup</h3>
+  <textarea id="ioText"></textarea>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button value="cancel" class="ghost">Close</button>
+    <button value="ok" id="ioOk">Apply</button>
+  </div>
+</form></dialog>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const DEFAULT_SCALE=[['S',10],['A',9],['B',8],['C',7],['D',6],['E',5],['F',0]];
+let state={scale:DEFAULT_SCALE.map(r=>r.slice()),sems:[]};
+try{const s=JSON.parse(localStorage.getItem('cgpa_planner_v1'));if(s&&Array.isArray(s.sems))state=s;}catch(e){}
+if(!state.sems.length)state.sems=[{name:'Semester 1',courses:[{n:'',cr:4,g:''},{n:'',cr:4,g:''},{n:'',cr:3,g:''}]}];
+const save=()=>localStorage.setItem('cgpa_planner_v1',JSON.stringify(state));
+const maxPoint=()=>Math.max(...state.scale.map(r=>+r[1]||0),10);
+const pointsOf=g=>{const r=state.scale.find(x=>x[0]===g);return r?+r[1]:null};
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function semStats(sem){
+  let cr=0,pts=0,done=0;
+  sem.courses.forEach(c=>{const p=pointsOf(c.g);if(c.cr>0){if(p!=null){cr+=+c.cr;pts+=+c.cr*p;done++;}}});
+  return{cr,pts,sgpa:cr?pts/cr:null,done};
+}
+function overall(){
+  let cr=0,pts=0;
+  state.sems.forEach(s=>{const t=semStats(s);cr+=t.cr;pts+=t.pts;});
+  return{cr,pts,cgpa:cr?pts/cr:null};
+}
+
+function renderScale(){
+  $('#scaleBox').innerHTML='<table><tr><th>Letter</th><th>Points</th><th></th></tr>'+
+    state.scale.map((r,i)=>`<tr><td><input data-sc="${i}" data-f="0" value="${esc(r[0])}" style="width:60px"></td><td><input data-sc="${i}" data-f="1" type="number" step="0.5" value="${r[1]}" style="width:70px"></td><td><button class="x" data-scdel="${i}" title="remove">&times;</button></td></tr>`).join('')+
+    '</table><button class="ghost" id="addScale" style="margin-top:8px;padding:5px 10px;font-size:12px">+ row</button>';
+}
+
+function renderSems(){
+  $('#sems').innerHTML=state.sems.map((s,si)=>{
+    const t=semStats(s);
+    return `<div class="sem">
+    <div class="sem-h">
+      <input class="name" data-sem="${si}" value="${esc(s.name)}" placeholder="Semester name">
+      <span class="sg">SGPA <b>${t.sgpa!=null?t.sgpa.toFixed(2):'-'}</b> &middot; ${t.cr} credits counted</span>
+      <button class="warn" data-sem-del="${si}" style="padding:4px 10px;font-size:11px">Delete sem</button>
+    </div>
+    <table><tr><th style="width:46%">Course</th><th style="width:18%">Credits</th><th style="width:22%">Grade</th><th></th></tr>
+    ${s.courses.map((c,ci)=>`<tr>
+      <td><input data-c="${si}.${ci}" data-f="n" value="${esc(c.n)}" placeholder="e.g. Mathematics I"></td>
+      <td class="cr"><input data-c="${si}.${ci}" data-f="cr" type="number" min="0" step="0.5" value="${c.cr}"></td>
+      <td><select data-c="${si}.${ci}" data-f="g"><option value="">-</option>${state.scale.map(r=>`<option ${c.g===r[0]?'selected':''} value="${esc(r[0])}">${esc(r[0])} (${r[1]})</option>`).join('')}</select></td>
+      <td><button class="x" data-cdel="${si}.${ci}" title="remove">&times;</button></td>
+    </tr>`).join('')}</table>
+    <div class="sem-f"><button class="ghost" data-cadd="${si}">+ course</button></div>
+  </div>`;}).join('');
+}
+
+function renderTop(){
+  const o=overall(),mp=maxPoint();
+  if(o.cgpa==null){$('#cgpaBig').innerHTML=`-<small> / ${mp}</small>`;$('#cgpaBar').style.width='0%';$('#cgpaSub').textContent='Add a semester below to start.';}
+  else{
+    $('#cgpaBig').innerHTML=`${o.cgpa.toFixed(2)}<small> / ${mp}</small>`;
+    $('#cgpaBar').style.width=Math.min(100,o.cgpa/mp*100)+'%';
+    const doneCr=o.cr;
+    $('#cgpaSub').textContent=`Across ${doneCr} graded credits in ${state.sems.length} semester${state.sems.length>1?'s':''}.`;
+  }
+}
+
+function renderVerdict(){
+  const o=overall(),mp=maxPoint();
+  const t=parseFloat($('#target').value),left=parseFloat($('#creditsLeft').value);
+  const el=$('#verdict');
+  if(!(t>0)||!(left>=0)){el.textContent='Enter a target and the credits you still have to earn.';return;}
+  const curCr=o.cr,curPts=o.pts;
+  if(curCr===0){el.innerHTML=`No graded credits yet. To finish at <b>${t.toFixed(2)}</b>, you need to average <b>${t.toFixed(2)}</b> grade points across your first ${left} credits.`;return;}
+  const need=(t*(curCr+left)-curPts)/left;
+  if(need<=0){el.innerHTML=`You are already past <b>${t.toFixed(2)}</b>. Even 0 points from here keeps you at or above it. Nice.`;}
+  else if(need>mp){el.innerHTML=`<span class="no">Not reachable:</span> you would need an average of <b>${need.toFixed(2)}</b> points but the scale tops out at ${mp}. Best possible finish: <b>${((curPts+left*mp)/(curCr+left)).toFixed(2)}</b>.`;}
+  else{
+    const letter=[...state.scale].sort((a,b)=>b[1]-a[1]).find(r=>+r[1]>=need);
+    el.innerHTML=`You need an average of <b>${need.toFixed(2)}</b> grade points over your next ${left} credits${letter?` - roughly a <b>${esc(letter[0])}</b> average`:''}. Current pace: ${(o.cgpa||0).toFixed(2)} over ${curCr} credits.`;
+  }
+}
+
+function renderAll(){renderScale();renderSems();renderTop();renderVerdict();save();}
+
+document.addEventListener('input',e=>{
+  const d=e.target.dataset;
+  if(d.sc!=null){state.scale[+d.sc][+d.f]=d.f==='1'?parseFloat(e.target.value)||0:e.target.value.toUpperCase();renderSems();renderTop();renderVerdict();save();return;}
+  if(d.sem!=null){state.sems[+d.sem].name=e.target.value;save();return;}
+  if(d.c!=null){const[si,ci]=d.c.split('.').map(Number);const c=state.sems[si].courses[ci];
+    c[d.f]=d.f==='cr'?parseFloat(e.target.value)||0:e.target.value;
+    if(d.f==='g'||d.f==='cr'){renderSems();renderTop();renderVerdict();save();}else save();return;}
+});
+document.addEventListener('click',e=>{
+  const d=e.target.dataset;
+  if(d.scdel!=null){if(state.scale.length>2){state.scale.splice(+d.scdel,1);renderAll();}return;}
+  if(e.target.id==='addScale'){state.scale.push(['X',0]);renderAll();return;}
+  if(d.semDel!=null){if(confirm('Delete this semester and its courses?')){state.sems.splice(+d.semDel,1);renderAll();}return;}
+  if(d.cdel!=null){const[si,ci]=d.cdel.split('.').map(Number);state.sems[si].courses.splice(ci,1);renderAll();return;}
+  if(d.cadd!=null){state.sems[+d.cadd].courses.push({n:'',cr:3,g:''});renderAll();return;}
+});
+$('#addSem').onclick=()=>{state.sems.push({name:'Semester '+(state.sems.length+1),courses:[{n:'',cr:4,g:''},{n:'',cr:4,g:''},{n:'',cr:3,g:''}]});renderAll();};
+$('#target').addEventListener('input',renderVerdict);
+$('#creditsLeft').addEventListener('input',renderVerdict);
+
+let ioMode='export';
+$('#exportBtn').onclick=()=>{ioMode='export';$('#ioTitle').textContent='Backup - copy this somewhere safe';$('#ioText').value=JSON.stringify(state);$('#ioOk').style.display='none';$('#ioDlg').showModal();};
+$('#importBtn').onclick=()=>{ioMode='import';$('#ioTitle').textContent='Restore - paste a backup';$('#ioText').value='';$('#ioOk').style.display='';$('#ioDlg').showModal();};
+$('#ioOk').onclick=()=>{if(ioMode!=='import')return;try{const s=JSON.parse($('#ioText').value);if(!Array.isArray(s.sems)||!Array.isArray(s.scale))throw 0;state=s;renderAll();}catch(e){alert('That does not look like a CGPA Planner backup.');}};
+renderAll();
+</script>
+</body>
+</html>
