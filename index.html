@@ -194,7 +194,11 @@ document.addEventListener('input',e=>{
   if(d.sem!=null){state.sems[+d.sem].name=e.target.value;save();return;}
   if(d.c!=null){const[si,ci]=d.c.split('.').map(Number);const c=state.sems[si].courses[ci];
     c[d.f]=d.f==='cr'?parseFloat(e.target.value)||0:e.target.value;
-    if(d.f==='g'||d.f==='cr'){renderSems();renderTop();renderVerdict();save();}else save();return;}
+    if(d.f==='g'||d.f==='cr'){
+      const t=semStats(state.sems[si]),sg=document.querySelectorAll('.sem')[si].querySelector('.sg');
+      if(sg)sg.innerHTML=`SGPA <b>${t.sgpa!=null?t.sgpa.toFixed(2):'-'}</b> &middot; ${t.cr} credits counted`;
+      renderTop();renderVerdict();save();
+    }else save();return;}
 });
 document.addEventListener('click',e=>{
   const d=e.target.dataset;
