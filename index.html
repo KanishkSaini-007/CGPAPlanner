@@ -73,6 +73,7 @@ dialog textarea{width:100%;height:140px;font:12px monospace;border:1px solid var
     <div class="big" id="cgpaBig">-<small> / <span class="scaleLabel">10</span></small></div>
     <div class="bar"><i id="cgpaBar" style="width:0%"></i></div>
     <p class="sub" id="cgpaSub">Add a semester below to start.</p>
+    <p class="sub" id="pctLine" style="display:none;margin-top:6px">About <b id="pctVal">-</b>% as a percentage, using the &times;<input id="pctMult" type="number" step="0.05" min="0" style="width:58px;border:1px solid var(--line);border-radius:5px;padding:2px 5px;font:13px system-ui,sans-serif"> rule - check the formula your college uses.</p>
   </div>
   <div class="card">
     <h2>Grading scale</h2>
@@ -116,6 +117,7 @@ const $=s=>document.querySelector(s);
 const DEFAULT_SCALE=[['S',10],['A',9],['B',8],['C',7],['D',6],['E',5],['F',0]];
 let state={scale:DEFAULT_SCALE.map(r=>r.slice()),sems:[]};
 try{const s=JSON.parse(localStorage.getItem('cgpa_planner_v1'));if(s&&Array.isArray(s.sems))state=s;}catch(e){}
+if(typeof state.mult!=='number'||!(state.mult>0))state.mult=9.5;
 if(!state.sems.length)state.sems=[{name:'Semester 1',courses:[{n:'',cr:4,g:''},{n:'',cr:4,g:''},{n:'',cr:3,g:''}]}];
 const save=()=>localStorage.setItem('cgpa_planner_v1',JSON.stringify(state));
 const maxPoint=()=>Math.max(...state.scale.map(r=>+r[1]||0),10);
@@ -161,12 +163,14 @@ function renderSems(){
 
 function renderTop(){
   const o=overall(),mp=maxPoint();
-  if(o.cgpa==null){$('#cgpaBig').innerHTML=`-<small> / ${mp}</small>`;$('#cgpaBar').style.width='0%';$('#cgpaSub').textContent='Add a semester below to start.';}
+  if(o.cgpa==null){$('#cgpaBig').innerHTML=`-<small> / ${mp}</small>`;$('#cgpaBar').style.width='0%';$('#cgpaSub').textContent='Add a semester below to start.';$('#pctLine').style.display='none';}
   else{
     $('#cgpaBig').innerHTML=`${o.cgpa.toFixed(2)}<small> / ${mp}</small>`;
     $('#cgpaBar').style.width=Math.min(100,o.cgpa/mp*100)+'%';
     const doneCr=o.cr;
     $('#cgpaSub').textContent=`Across ${doneCr} graded credits in ${state.sems.length} semester${state.sems.length>1?'s':''}.`;
+    const m=(typeof state.mult==='number'&&state.mult>0)?state.mult:9.5;
+    $('#pctLine').style.display='';$('#pctVal').textContent=(o.cgpa*m).toFixed(2);
   }
 }
 
@@ -209,6 +213,8 @@ document.addEventListener('click',e=>{
   if(d.cadd!=null){state.sems[+d.cadd].courses.push({n:'',cr:3,g:''});renderAll();return;}
 });
 $('#addSem').onclick=()=>{state.sems.push({name:'Semester '+(state.sems.length+1),courses:[{n:'',cr:4,g:''},{n:'',cr:4,g:''},{n:'',cr:3,g:''}]});renderAll();};
+$('#pctMult').value=state.mult;
+$('#pctMult').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(v>0){state.mult=v;save();const o=overall();if(o.cgpa!=null)$('#pctVal').textContent=(o.cgpa*state.mult).toFixed(2);}});
 $('#target').addEventListener('input',renderVerdict);
 $('#creditsLeft').addEventListener('input',renderVerdict);
 
